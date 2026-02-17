@@ -18,4 +18,9 @@ public class OrderSteps {
     public Response getOrders() {
         return orderClient.getOrders();
     }
+
+    @Step("Отмена заказа по track")
+    public Response cancelOrder(int track) {
+        return orderClient.cancelOrder(track);
+    }
 }

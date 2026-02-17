@@ -9,8 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import steps.CourierSteps;
 
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.is;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -25,6 +24,7 @@ public class CourierLoginTest {
         courierSteps = new CourierSteps();
         courier = TestData.generateCourier();
         courierSteps.createCourier(courier);
+        courierId = courierSteps.getCourierId(courier);
     }
 
     @Test
@@ -37,20 +37,34 @@ public class CourierLoginTest {
         );
 
         response.then()
-                .statusCode(200)
+                .statusCode(SC_OK)
                 .body("id", notNullValue());
 
         courierId = response.then().extract().path("id");
     }
 
     @Test
-    public void loginRequiresAllFields() {
-        Response response = courierSteps.loginCourier(
-                new CourierCredentials(courier.getLogin())
-        );
+    public void loginWithoutLoginReturns400() {
+        CourierCredentials credentials =
+                new CourierCredentials(null, "password");
+
+        Response response = courierSteps.loginCourier(credentials);
 
         response.then()
-                .statusCode(anyOf(is(400), is(504)));
+                .statusCode(SC_BAD_REQUEST)
+                .body("message", equalTo("Недостаточно данных для входа"));
+    }
+
+    @Test
+    public void loginWithoutPasswordReturns400() {
+        CourierCredentials credentials =
+                new CourierCredentials(courier.getLogin(), "");
+
+        Response response = courierSteps.loginCourier(credentials);
+
+        response.then()
+                .statusCode(SC_BAD_REQUEST)
+                .body("message", equalTo("Недостаточно данных для входа"));
     }
 
     @Test
@@ -60,7 +74,7 @@ public class CourierLoginTest {
         );
 
         response.then()
-                .statusCode(404)
+                .statusCode(SC_NOT_FOUND)
                 .body("message", equalTo("Учетная запись не найдена"));
     }
 
@@ -71,15 +85,14 @@ public class CourierLoginTest {
         );
 
         response.then()
-                .statusCode(404)
+                .statusCode(SC_NOT_FOUND)
                 .body("message", equalTo("Учетная запись не найдена"));
     }
 
     @After
     public void tearDown() {
-        if (courierId == 0) {
-            courierId = courierSteps.getCourierId(courier);
+        if (courierId != 0) {
+            courierSteps.deleteCourier(courierId);
         }
-        courierSteps.deleteCourier(courierId);
     }
 }

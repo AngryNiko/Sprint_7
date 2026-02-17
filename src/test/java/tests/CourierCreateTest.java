@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import steps.CourierSteps;
 
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.containsString;
 
@@ -26,12 +27,11 @@ public class CourierCreateTest {
     @Test
     public void courierCanBeCreated() {
         Response response = courierSteps.createCourier(courier);
+        courierId = courierSteps.getCourierId(courier);
 
         response.then()
-                .statusCode(201)
+                .statusCode(SC_CREATED)
                 .body("ok", equalTo(true));
-
-        courierId = courierSteps.getCourierId(courier);
     }
 
     @Test
@@ -41,7 +41,7 @@ public class CourierCreateTest {
         Response response = courierSteps.createCourier(courier);
 
         response.then()
-                .statusCode(409)
+                .statusCode(SC_CONFLICT)
                 .body("message", containsString("Этот логин уже используется"));
 
         courierId = courierSteps.getCourierId(courier);
@@ -58,7 +58,18 @@ public class CourierCreateTest {
         Response response = courierSteps.createCourier(invalidCourier);
 
         response.then()
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
+                .body("message", equalTo("Недостаточно данных для создания учетной записи"));
+    }
+
+    @Test
+    public void createCourierWithoutPassword() {
+        Courier courier = new Courier("login123", null, "name");
+
+        Response response = courierSteps.createCourier(courier);
+
+        response.then()
+                .statusCode(SC_BAD_REQUEST)
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 

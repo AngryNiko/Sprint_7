@@ -5,16 +5,16 @@ import io.restassured.response.Response;
 import model.Courier;
 import model.CourierCredentials;
 
-public class CourierClient {
+import static client.Endpoints.*;
 
-    private static final String BASE_URL = "https://qa-scooter.praktikum-services.ru";
+public class CourierClient {
 
     public Response createCourier(Courier courier) {
         return RestAssured.given()
                 .baseUri(BASE_URL)
                 .header("Content-type", "application/json")
                 .body(courier)
-                .post("/api/v1/courier");
+                .post(CREATE_COURIER);
     }
 
     public Response login(CourierCredentials credentials) {
@@ -22,12 +22,12 @@ public class CourierClient {
                 .baseUri(BASE_URL)
                 .header("Content-type", "application/json")
                 .body(credentials)
-                .post("/api/v1/courier/login");
+                .post(LOGIN_COURIER);
     }
 
     public Response delete(int id) {
         return RestAssured.given()
                 .baseUri(BASE_URL)
-                .delete("/api/v1/courier/" + id);
+                .delete(DELETE_COURIER + id);
     }
 }

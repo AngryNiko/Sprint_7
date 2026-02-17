@@ -45,4 +45,8 @@ public class TestData {
                 colors
         );
     }
+
+    public static Order getDefaultOrder() {
+        return generateOrder(null);
+    }
 }
